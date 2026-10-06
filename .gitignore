@@ -1,0 +1,13 @@
+# 가상환경
+.venv/
+
+# Test / type checker cache
+.pytest_cache/
+.mypy_cache/
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+.DS_Store
