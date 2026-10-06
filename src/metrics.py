@@ -15,7 +15,7 @@ def summarize_numeric(series):
 def build_conversation_dataset(interaction_df):
 
     df = interaction_df.sort_values(
-        ["chatId", "interactionCount"]
+        ["chatId", "interactionCount", "timestamp"]
     ).copy()
 
     conversation_df = (
@@ -26,8 +26,11 @@ def build_conversation_dataset(interaction_df):
             first_timestamp=("timestamp", "min"),
             last_timestamp=("timestamp", "max"),
 
-            chatTotalInteractionCount=("chatTotalInteractionCount", "first"),
+            observed_interaction_count=("chatId", "size"),
             active_days=("interaction_date", "nunique"),
+
+            # 노트북 작동을 위한 원본 데이터 보존
+            chatTotalInteractionCount=("chatTotalInteractionCount", "first"),
         )
         .reset_index()
     )
@@ -44,7 +47,7 @@ def build_conversation_dataset(interaction_df):
 
     # Conversation type
     conversation_df["is_multi_turn"] = (
-        conversation_df["chatTotalInteractionCount"] >= 2
+        conversation_df["observed_interaction_count"] >= 2
     )
 
     conversation_df["is_multi_day"] = (
@@ -52,11 +55,9 @@ def build_conversation_dataset(interaction_df):
     )
 
     # 첫 interaction
-    first_interaction = (
-        df.groupby("chatId")
-        .first()
-        .reset_index()
-    )
+    first_interaction = df[
+    df["observed_interaction_index"] == 0
+].copy()
 
     first_features = first_interaction[
         [
@@ -149,6 +150,7 @@ def build_user_dataset(interaction_df, conversation_df):
     first_chat_features = first_chat[
         [
             "userId",
+            "observed_interaction_count",
             "chatTotalInteractionCount",
             "is_multi_turn",
             "first_intent",
@@ -158,7 +160,7 @@ def build_user_dataset(interaction_df, conversation_df):
         ]
     ].rename(
         columns={
-            "chatTotalInteractionCount": "first_chat_interaction_count",
+            "observed_interaction_count": "first_chat_interaction_count",
             "is_multi_turn": "first_chat_is_multi_turn",
         }
     )

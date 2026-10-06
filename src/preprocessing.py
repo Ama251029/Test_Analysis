@@ -54,6 +54,16 @@ def build_interaction_dataset(df):
         interaction_df["timestamp"].dt.date
     )
 
+    # 관측 순서 재정의
+    interaction_df = interaction_df.sort_values(
+        ["chatId", "timestamp"]
+    ).copy()
+
+    interaction_df["observed_interaction_index"] = (
+        interaction_df.groupby("chatId")
+        .cumcount()
+    )
+    
     interaction_df["interaction_hour"] = (
         interaction_df["timestamp"].dt.hour
     )
